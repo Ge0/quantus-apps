@@ -111,7 +111,7 @@ class MinerProcess {
       _externalMinerProcess = await Process.start(externalMinerBin.path, [
         '--port',
         externalMinerPort.toString(),
-        '--num-cores',
+        '--workers',
         minerCores.toString(),
       ]);
       print(
@@ -188,10 +188,9 @@ class MinerProcess {
     try {
       // Check if the process has exited by looking at its PID
       final pid = _externalMinerProcess!.pid;
-      final result = await Process.run('kill', ['-0', pid.toString()]);
-      if (result.exitCode != 0) {
+      minerStillRunning = await isProcessRunning(pid);
+      if (!minerStillRunning) {
         print('DEBUG: External miner process (PID: $pid) is not running');
-        minerStillRunning = false;
       } else {
         print('DEBUG: External miner process (PID: $pid) is still running');
       }
@@ -421,4 +420,15 @@ class MinerProcess {
     // Close the logs stream
     _logsController.close();
   }
+
+Future<bool> isProcessRunning(int pid) async {
+  if (Platform.isWindows) {
+    final result = await Process.run('tasklist', ['/FI', 'PID eq $pid']);
+    return result.stdout.toString().contains(pid.toString());
+  } else {
+    final result = await Process.run('kill', ['-0', '$pid']);
+    return result.exitCode == 0;
+  }
+}
+
 }
