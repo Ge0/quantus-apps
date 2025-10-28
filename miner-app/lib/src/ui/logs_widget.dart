@@ -30,7 +30,7 @@ class _LogsWidgetState extends State<LogsWidget> {
   @override
   void didUpdateWidget(LogsWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.minerProcess != widget.minerProcess) {
+    if (oldWidget.minerProcess != widget.minerProcess && widget.minerProcess != null) {
       _setupLogsListener();
     }
   }
